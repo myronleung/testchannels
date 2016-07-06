@@ -1,0 +1,52 @@
+{% extends "ctest/base.html" %}
+
+{% block content %}
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+  <script type="javascript">
+    // Note that the path doesn't matter for routing; any WebSocket
+    // connection gets bumped over to WebSocket consumers
+
+  </script>
+  chatroom
+  <table>
+    {% for i in messages %}
+      <tr>
+        <td>{{ i.author.username }}: </td>
+        <td>{{ i.message }}</td>
+      </tr>
+    {% endfor %}
+  </table>
+  <form onsubmit="sockSub()">
+    <input type="TextField" id="message" value="">
+    <input type="submit" name="submit" value="Send">
+  </form>
+
+  <script type="text/javascript">
+    console.log('pre-socket');
+    socket = new WebSocket("ws://" + window.location.host + "/chat/");
+    console.log('post-socket');
+    console.log('beginning socket: '+socket.readyState);
+    console.log('url: '+socket.url);
+    function sockSub(){
+      var m = $('#message').val();
+      console.log('sending message: '+m);
+      socket.send(m);
+    }
+    socket.onmessage = function(e) {
+      console.log('message: ' + JSON.parse(e.data));
+      console.log('during post-onmessage');
+    }
+    socket.onopen = function(e) {
+      console.log('sockets onopen: '+socket.readyState);
+      // document.write('sockets: '+socket.readyState);
+    }
+    socket.onerror = function(e) {
+      console.log('error: '+ e.data);
+    }
+    socket.onclose = function(e){
+      console.log('closed socket '+e.data)
+    }
+    console.log('ending socket: '+socket.readyState);
+  </script>
+
+{% endblock content %}
