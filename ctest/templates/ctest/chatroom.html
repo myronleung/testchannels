@@ -8,33 +8,39 @@
 
   </script>
   chatroom
-  <table>
+  <table id='chat'>
     {% for i in messages %}
       <tr>
-        <td>{{ i.author.username }}: </td>
         <td>{{ i.message }}</td>
       </tr>
     {% endfor %}
   </table>
-  <form onsubmit="sockSub()">
+  <form id='chatform'>
     <input type="TextField" id="message" value="">
-    <input type="submit" name="submit" value="Send">
+    <input type="submit" id='go' name="submit" value="Send">
   </form>
 
   <script type="text/javascript">
-    console.log('pre-socket');
     socket = new WebSocket("ws://" + window.location.host + "/chat/");
-    console.log('post-socket');
-    console.log('beginning socket: '+socket.readyState);
-    console.log('url: '+socket.url);
-    function sockSub(){
-      var m = $('#message').val();
-      console.log('sending message: '+m);
-      socket.send(m);
-    }
+    $("#chatform").on("submit", function(event) {
+        var message = {
+            message: $('#message').val(),
+        }
+        socket.send(JSON.stringify(message));
+        $("#message").val('').focus();
+        console.log('message: '+JSON.stringify(message))
+        return false;
+    });
     socket.onmessage = function(e) {
       console.log('message: ' + JSON.parse(e.data));
-      console.log('during post-onmessage');
+      var data = JSON.parse(e.data);
+      var chat = $("#chat")
+      var ele = $('<tr></tr>')
+
+      ele.append(
+          $("<td></td>").text(data.message)
+      )
+      chat.append(ele)
     }
     socket.onopen = function(e) {
       console.log('sockets onopen: '+socket.readyState);
